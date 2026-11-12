@@ -1,0 +1,27 @@
+SYNTHESIS VERIFICATION - 800 MHz / 1.25 ns
+
+Compile completed: True
+Tool error lines: 0
+check_design: True
+Total cell area: 44028.014670
+Reported setup slacks (ns): 0.000710, 0.000738, 0.001075, 0.001142, 0.001588
+Unmapped warning in area report: False
+Inserted SRAM address buffers: 12
+Remaining violation categories: max_capacitance
+Remaining violations: 2640
+  Capacitance limit 0.000000 pF: 2576 nets
+  Capacitance limit 0.000836 pF: 64 nets
+
+Library findings (unchanged supplied libraries):
+  gscl45nm DFFSR/Q and several logic outputs specify max_capacitance = 0.
+  SRAM dout0 limit = 0.0008364 pF.
+  BUFX2 input capacitance = 0.00153896 pF; INVX1 = 0.00155103 pF.
+  SRAM address max_transition violations removed by 12 BUFX2 buffers.
+
+Status: synthesis completed; reported setup and transition checks pass.
+Remaining capacitance constraints require corrected/compatible library data
+or an instructor-approved lab exception. Limits have not been overridden.
+
+Outputs: synthesized.v, synthesized.sdc, synthesized.ddc and *.rep
+Prior script/reports: synthesis_audit/before_*
+Compile log: synthesis_audit/final_compile.log

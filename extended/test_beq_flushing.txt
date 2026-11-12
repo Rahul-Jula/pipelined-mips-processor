@@ -1,0 +1,55 @@
+# ==============================================================================
+
+# Test Case: Control Hazard and Flushing Verification for BEQ Instructions
+
+# Verifies:
+
+# 1. BEQ branch taken: wrong-path instruction fetched in IF is flushed
+
+# 2. BEQ branch not taken: fall-through instruction is executed normally
+
+# ==============================================================================
+
+
+
+main:
+
+    addi $1, $0, 5          # $1 = 5
+
+    addi $2, $0, 5          # $2 = 5
+
+    beq  $1, $2, target1    # 5 == 5 -> Branch TAKEN (skips next instruction)
+
+    addi $3, $0, 99         # Wrong-path instruction: MUST BE FLUSHED ($3 stays 0)
+
+
+
+target1:
+
+    addi $4, $0, 10         # $4 = 10
+
+    addi $5, $0, 20         # $5 = 20
+
+    beq  $1, $5, target2    # 5 == 20 -> Branch NOT TAKEN (does NOT skip next instruction)
+
+    addi $6, $0, 30         # Sequential instruction: MUST EXECUTE ($6 = 30)
+
+
+
+target2:
+
+    sw   $3, 0($0)          # Write $3 (0x00000000) to addr 0x00 (proves addi $3,99 flushed)
+
+    sw   $4, 4($0)          # Write $4 (0x0000000a) to addr 0x04
+
+    sw   $6, 8($0)          # Write $6 (0x0000001e) to addr 0x08
+
+
+
+# Expected Memory Writes:
+
+# Check 1: Address = 0x00000000, Data = 0x00000000 (0)
+
+# Check 2: Address = 0x00000004, Data = 0x0000000a (10)
+
+# Check 3: Address = 0x00000008, Data = 0x0000001e (30)

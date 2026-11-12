@@ -1,0 +1,63 @@
+# ==============================================================================
+
+# MIPS Assembly Program for Comprehensive Instruction Verification (Part 1)
+
+# Tests all supported instructions: add, sub, and, or, slt, lw, sw, beq, addi, j
+
+# ==============================================================================
+
+
+
+main:
+
+    addi $2, $0, 5          # $2 = 5
+
+    addi $3, $0, 12         # $3 = 12
+
+    addi $7, $3, -9         # $7 = 12 - 9 = 3 (data hazard on $3 forwarded from addi)
+
+    or   $4, $7, $2         # $4 = 3 | 5 = 7 (tests OR, data hazard on $7 forwarded)
+
+    and  $5, $3, $4         # $5 = 12 & 7 = 4 (tests AND, data hazard on $4 forwarded)
+
+    add  $5, $5, $4         # $5 = 4 + 7 = 11 (tests ADD, data hazard on $4 & $5 forwarded)
+
+    beq  $5, $7, end        # 11 == 3? False, branch NOT taken (tests BEQ not-taken)
+
+    slt  $4, $3, $4         # $4 = (12 < 7) = 0 (tests SLT false)
+
+    beq  $4, $0, around     # 0 == 0? True, branch TAKEN to around (tests BEQ taken + flushing)
+
+    addi $5, $0, 0          # Flushed / should NOT execute
+
+
+
+around:
+
+    slt  $4, $7, $2         # $4 = (3 < 5) = 1 (tests SLT true)
+
+    add  $7, $4, $5         # $7 = 1 + 11 = 12 (tests ADD, uses $5=11 because addi was flushed)
+
+    sub  $7, $7, $2         # $7 = 12 - 5 = 7 (tests SUB, data hazard on $7 forwarded)
+
+    sw   $7, 68($3)         # Mem[12 + 68 = 80 = 0x50] = 7 (tests SW, Check 1: addr=0x50, data=0x7)
+
+    lw   $2, 80($0)         # $2 = Mem[80] = 7 (tests LW)
+
+    j    end                # Jump to end (tests J + flushing)
+
+    addi $2, $0, 1          # Flushed / should NOT execute
+
+
+
+end:
+
+    sw   $2, 84($0)         # Mem[84 = 0x54] = 7 (tests SW, Check 2: addr=0x54, data=0x7)
+
+
+
+# Expected simulation writes:
+
+# 1. Address: 0x00000050, Data: 0x00000007
+
+# 2. Address: 0x00000054, Data: 0x00000007

@@ -1,0 +1,47 @@
+# ==============================================================================
+
+# Test Case: Data Hazard and Forwarding Verification for ADD Instructions
+
+# Verifies:
+
+# 1. EX/MEM to EX forwarding (distance-1 hazard)
+
+# 2. MEM/WB to EX forwarding (distance-2 hazard)
+
+# 3. Simultaneous forwarding to both source operands (rs and rt)
+
+# ==============================================================================
+
+
+
+main:
+
+    addi $1, $0, 10         # $1 = 10
+
+    addi $2, $0, 20         # $2 = 20
+
+    add  $3, $1, $2         # $3 = 10 + 20 = 30
+
+    add  $4, $3, $1         # $4 = 30 + 10 = 40 (EX-to-EX forward of $3 from previous ADD)
+
+    addi $5, $0, 5          # $5 = 5
+
+    add  $6, $4, $5         # $6 = 40 + 5 = 45  (MEM-to-EX forward of $4)
+
+    add  $7, $4, $6         # $7 = 40 + 45 = 85 (Forward $4 from MEM/WB, $6 from EX/MEM)
+
+    sw   $4, 0($0)          # Write 40 (0x00000028) to address 0x00
+
+    sw   $6, 4($0)          # Write 45 (0x0000002d) to address 0x04
+
+    sw   $7, 8($0)          # Write 85 (0x00000055) to address 0x08
+
+
+
+# Expected Memory Writes:
+
+# Check 1: Address = 0x00000000, Data = 0x00000028 (40)
+
+# Check 2: Address = 0x00000004, Data = 0x0000002d (45)
+
+# Check 3: Address = 0x00000008, Data = 0x00000055 (85)
